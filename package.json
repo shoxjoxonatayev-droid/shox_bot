@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
-    "start": "node server.ts",
+    "build": "vite build && tsc",
+    "start": "npm run build && node dist/server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
@@ -36,4 +36,5 @@
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^4.1.14"
   }
+  
 }
