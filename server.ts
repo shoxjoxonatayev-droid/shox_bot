@@ -14,30 +14,18 @@ async function startServer() {
   const PORT = process.env.PORT || 3000;
 
   // =======================
-  // TELEGRAM BOT
+  // TELEGRAM BOT (SAFE MODE)
   // =======================
-  if (!token) {
-    console.error("❌ TELEGRAM_BOT_TOKEN topilmadi!");
-    return;
-  }
+  if (token && appUrl) {
+    const bot = new TelegramBot(token, { polling: true });
 
-  if (!appUrl) {
-    console.error("❌ APP_URL topilmadi! Render URL qo‘y!");
-    return;
-  }
+    console.log("🤖 Bot ishga tushdi...");
+    console.log("🌐 Web App URL:", appUrl);
 
-  const bot = new TelegramBot(token, { polling: true });
+    bot.onText(/\/start/, (msg) => {
+      const chatId = msg.chat.id;
 
-  console.log("🤖 Bot ishga tushdi...");
-  console.log("🌐 Web App URL:", appUrl);
-
-  bot.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
-
-    bot.sendMessage(
-      chatId,
-      "Salom! Botga xush kelibsiz 🚀",
-      {
+      bot.sendMessage(chatId, "Salom! Botga xush kelibsiz 🚀", {
         reply_markup: {
           inline_keyboard: [
             [
@@ -48,9 +36,12 @@ async function startServer() {
             ],
           ],
         },
-      }
-    );
-  });
+      });
+    });
+
+  } else {
+    console.error("❌ TELEGRAM_BOT_TOKEN yoki APP_URL yo‘q!");
+  }
 
   // =======================
   // VITE / EXPRESS
