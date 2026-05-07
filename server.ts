@@ -6,56 +6,74 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const token = process.env.TELEGRAM_BOT_TOKEN || "";
-const appUrl = process.env.APP_URL || "";
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const appUrl = process.env.APP_URL;
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
-  // Telegram Bot sozlamalari
-  if (token) {
-    const bot = new TelegramBot(token, { polling: true });
+  // =======================
+  // TELEGRAM BOT
+  // =======================
+  if (!token) {
+    console.error("❌ TELEGRAM_BOT_TOKEN topilmadi!");
+    return;
+  }
 
-    console.log("Telegram bot sozlamalari yuklanmoqda...");
-    console.log(`Bot ishlayotgan APP_URL: ${appUrl}`);
+  if (!appUrl) {
+    console.error("❌ APP_URL topilmadi! Render URL qo‘y!");
+    return;
+  }
 
-    bot.onText(/\/start/, (msg) => {
-      const chatId = msg.chat.id;
-      bot.sendMessage(chatId, "Salom! Finance Pro botiga xush kelibsiz. Hisoblarni yuritish uchun quyidagi tugmani bosing:", {
+  const bot = new TelegramBot(token, { polling: true });
+
+  console.log("🤖 Bot ishga tushdi...");
+  console.log("🌐 Web App URL:", appUrl);
+
+  bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+
+    bot.sendMessage(
+      chatId,
+      "Salom! Botga xush kelibsiz 🚀",
+      {
         reply_markup: {
           inline_keyboard: [
             [
               {
-                text: "Ilovani ochish",
-                web_app: { url: appUrl }
-              }
-            ]
-          ]
-        }
-      });
-    });
+                text: "📊 Ilovani ochish",
+                web_app: { url: appUrl },
+              },
+            ],
+          ],
+        },
+      }
+    );
+  });
 
-    console.log("Telegram bot ishga tushdi...");
-  }
-
-  // Vite middleware for development
+  // =======================
+  // VITE / EXPRESS
+  // =======================
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
+
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = path.join(process.cwd(), "dist");
+
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server ishlayapti: http://localhost:${PORT}`);
   });
 }
 
